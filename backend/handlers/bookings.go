@@ -74,7 +74,11 @@ func (h *BookingHandler) CreateBooking(c *fiber.Ctx) error {
 		CreatedAt:   time.Now(),
 	}
 
-	h.Store.AddBooking(booking)
+	if err := h.Store.AddBooking(booking); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to create booking: " + err.Error(),
+		})
+	}
 
 	// Broadcast via WebSocket
 	payload, _ := json.Marshal(booking)

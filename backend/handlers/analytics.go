@@ -28,6 +28,7 @@ func (h *AnalyticsHandler) GetAnalytics(c *fiber.Ctx) error {
 		"assigned":    0,
 		"in_progress": 0,
 		"completed":   0,
+		"cancelled":   0,
 	}
 	for _, o := range orders {
 		ordersByStatus[o.Status]++
@@ -48,6 +49,9 @@ func (h *AnalyticsHandler) GetAnalytics(c *fiber.Ctx) error {
 	itemCounts := make(map[string]int)
 	itemRevenue := make(map[string]float64)
 	for _, o := range orders {
+		if o.Status == "cancelled" {
+			continue // Exclude cancelled orders from revenue calculation
+		}
 		for _, item := range o.Items {
 			itemCounts[item.Name] += item.Quantity
 			itemRevenue[item.Name] += item.Price * float64(item.Quantity)

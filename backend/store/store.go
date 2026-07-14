@@ -16,8 +16,8 @@ func NewStore() *Store {
 
 // --- Order Operations ---
 
-func (s *Store) AddOrder(order models.Order) {
-	database.DB.Create(&order)
+func (s *Store) AddOrder(order models.Order) error {
+	return database.DB.Create(&order).Error
 }
 
 func (s *Store) GetOrders(resortID string) []models.Order {
@@ -48,8 +48,8 @@ func (s *Store) UpdateOrderStatus(resortID, orderID, status, assignee string) (*
 
 // --- Ticket Operations ---
 
-func (s *Store) AddTicket(ticket models.ServiceTicket) {
-	database.DB.Create(&ticket)
+func (s *Store) AddTicket(ticket models.ServiceTicket) error {
+	return database.DB.Create(&ticket).Error
 }
 
 func (s *Store) GetTickets(resortID string) []models.ServiceTicket {
@@ -80,8 +80,8 @@ func (s *Store) UpdateTicketStatus(resortID, ticketID, status, assignee string) 
 
 // --- Booking Operations ---
 
-func (s *Store) AddBooking(booking models.AmenityBooking) {
-	database.DB.Create(&booking)
+func (s *Store) AddBooking(booking models.AmenityBooking) error {
+	return database.DB.Create(&booking).Error
 }
 
 func (s *Store) GetBookings(resortID string) []models.AmenityBooking {
@@ -102,12 +102,12 @@ func (s *Store) GetBookingsBySlot(resortID, amenityType, timeSlot string) int {
 func (s *Store) GetActiveRooms(resortID string) int {
 	var activeOrders []string
 	database.DB.Model(&models.Order{}).
-		Where("resort_id = ? AND status != 'completed'", resortID).
+		Where("resort_id = ? AND status NOT IN ('completed', 'cancelled')", resortID).
 		Pluck("room_id", &activeOrders)
 
 	var activeTickets []string
 	database.DB.Model(&models.ServiceTicket{}).
-		Where("resort_id = ? AND status != 'completed'", resortID).
+		Where("resort_id = ? AND status NOT IN ('completed', 'cancelled')", resortID).
 		Pluck("room_id", &activeTickets)
 
 	rooms := make(map[string]bool)

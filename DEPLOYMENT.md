@@ -53,7 +53,9 @@ Both `guest-portal` and `staff-dashboard` are Next.js applications and can be ho
 #### Deploying Guest Portal
 - In the Vercel Import screen, set the **Root Directory** to `guest-portal`.
 - Keep the Framework Preset as `Next.js`.
-- Add Environment Variables (if needed, e.g., pointing to your new backend URL).
+- Add Environment Variables:
+  - `NEXT_PUBLIC_API_URL` (if needed, e.g., pointing to your new backend URL)
+  - `RESEND_API_KEY` (Required for the E-Bill feature. Get this from your [Resend dashboard](https://resend.com/))
 - Click **Deploy**.
 
 #### Deploying Staff Dashboard

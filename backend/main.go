@@ -64,8 +64,15 @@ func main() {
 	admin.Get("/staff", handlers.GetStaff)
 	admin.Delete("/staff/:id", handlers.DeleteStaff)
 
+	admin.Post("/menu", handlers.AddMenuItem)
+	admin.Put("/menu/:id", handlers.UpdateMenuItem)
+	admin.Delete("/menu/:id", handlers.DeleteMenuItem)
+
 	// Resort-scoped routes
 	resort := api.Group("/resorts/:id")
+
+	// Guest routes (Public)
+	resort.Get("/menu", handlers.GetMenuItems)
 
 	// Guest routes (Public)
 	resort.Post("/orders", orderHandler.CreateOrder)

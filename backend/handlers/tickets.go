@@ -59,7 +59,11 @@ func (h *TicketHandler) CreateTicket(c *fiber.Ctx) error {
 		CreatedAt: time.Now(),
 	}
 
-	h.Store.AddTicket(ticket)
+	if err := h.Store.AddTicket(ticket); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to create ticket: " + err.Error(),
+		})
+	}
 
 	// Broadcast via WebSocket
 	payload, _ := json.Marshal(ticket)

@@ -38,10 +38,12 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 		})
 	}
 
-	// Calculate total
 	var total float64
-	for _, item := range req.Items {
-		total += item.Price * float64(item.Quantity)
+	for i := range req.Items {
+		if req.Items[i].ID == "" {
+			req.Items[i].ID = uuid.New().String()
+		}
+		total += req.Items[i].Price * float64(req.Items[i].Quantity)
 	}
 
 	order := models.Order{
@@ -55,7 +57,11 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 		CreatedAt: time.Now(),
 	}
 
-	h.Store.AddOrder(order)
+	if err := h.Store.AddOrder(order); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to create order: " + err.Error(),
+		})
+	}
 
 	// Broadcast via WebSocket
 	payload, _ := json.Marshal(order)

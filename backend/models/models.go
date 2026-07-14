@@ -18,6 +18,16 @@ type User struct {
 
 // --- Order Models ---
 
+type MenuItem struct {
+	ID          string  `json:"id" gorm:"primaryKey"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
+	Category    string  `json:"category"`
+	IsVeg       bool    `json:"is_veg"`
+	IsAvailable bool    `json:"is_available" gorm:"default:true"`
+}
+
 type OrderItem struct {
 	ID         string  `json:"id" gorm:"primaryKey"`
 	OrderID    string  `json:"order_id" gorm:"not null;index"`

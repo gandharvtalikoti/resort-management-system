@@ -18,7 +18,7 @@ func ConnectDB() {
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		// Fallback for local development if not set in docker-compose
-		dsn = "host=localhost user=postgres password=postgres dbname=resort_db port=5432 sslmode=disable"
+		dsn = "host=localhost user=postgres password=root dbname=resort_db port=5432 sslmode=disable"
 	}
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -29,6 +29,7 @@ func ConnectDB() {
 	// Auto Migrate the schemas
 	err = db.AutoMigrate(
 		&models.User{},
+		&models.MenuItem{},
 		&models.Order{},
 		&models.OrderItem{},
 		&models.ServiceTicket{},
@@ -41,6 +42,7 @@ func ConnectDB() {
 	DB = db
 
 	seedDefaultAdmin()
+	SeedMenu()
 }
 
 func seedDefaultAdmin() {
