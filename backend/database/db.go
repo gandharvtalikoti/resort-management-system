@@ -34,6 +34,8 @@ func ConnectDB() {
 		&models.OrderItem{},
 		&models.ServiceTicket{},
 		&models.AmenityBooking{},
+		&models.GuestConsent{},
+		&models.RoomSession{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to auto migrate database schemas: %v", err)

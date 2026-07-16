@@ -38,6 +38,20 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 		})
 	}
 
+	authHeader := c.Get("Authorization")
+	if len(authHeader) < 8 || authHeader[:7] != "Bearer " {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Missing or invalid Authorization header",
+		})
+	}
+	token := authHeader[7:]
+
+	if !h.Store.ValidateSessionToken(resortID, req.RoomID, token) {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid or expired session token",
+		})
+	}
+
 	var total float64
 	for i := range req.Items {
 		if req.Items[i].ID == "" {

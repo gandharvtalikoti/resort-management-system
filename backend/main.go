@@ -25,7 +25,8 @@ func main() {
 
 	// Initialize Fiber app
 	app := fiber.New(fiber.Config{
-		AppName: "Buddha Village API",
+		AppName:   "Buddha Village API",
+		BodyLimit: 50 * 1024 * 1024, // 50MB to support Aadhaar image uploads
 	})
 
 	// --- Global Middleware ---
@@ -49,6 +50,7 @@ func main() {
 	ticketHandler := handlers.NewTicketHandler(dataStore, hub)
 	bookingHandler := handlers.NewBookingHandler(dataStore, hub)
 	analyticsHandler := handlers.NewAnalyticsHandler(dataStore)
+	consentHandler := handlers.NewConsentHandler(dataStore, hub)
 	wsHandler := handlers.NewWebSocketHandler(hub)
 
 	// --- API Routes ---
@@ -78,6 +80,9 @@ func main() {
 	resort.Post("/orders", orderHandler.CreateOrder)
 	resort.Post("/tickets", ticketHandler.CreateTicket)
 	resort.Post("/bookings", bookingHandler.CreateBooking)
+	resort.Post("/consents", consentHandler.CreateConsent)
+	resort.Get("/sessions/:room_id", consentHandler.GetActiveSession)
+	resort.Post("/sessions/:room_id/join", consentHandler.JoinSession)
 	
 	// Data fetches - in a real app, GETs might be public for guests filtering by their room_id,
 	// but for staff dashboard, they need to fetch all. For now we keep them public.
@@ -91,6 +96,9 @@ func main() {
 	protectedResort := resort.Group("", middleware.Protected())
 	protectedResort.Patch("/orders/:order_id", orderHandler.UpdateOrderStatus)
 	protectedResort.Patch("/tickets/:ticket_id", ticketHandler.UpdateTicketStatus)
+	protectedResort.Get("/consents", consentHandler.GetConsents)
+	protectedResort.Get("/sessions", consentHandler.GetActiveSessions)
+	protectedResort.Post("/sessions/:room_id/checkout", consentHandler.Checkout)
 
 	// --- WebSocket Route ---
 

@@ -38,6 +38,20 @@ func (h *TicketHandler) CreateTicket(c *fiber.Ctx) error {
 		})
 	}
 
+	authHeader := c.Get("Authorization")
+	if len(authHeader) < 8 || authHeader[:7] != "Bearer " {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Missing or invalid Authorization header",
+		})
+	}
+	token := authHeader[7:]
+
+	if !h.Store.ValidateSessionToken(resortID, req.RoomID, token) {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid or expired session token",
+		})
+	}
+
 	// Set priority based on type
 	priority := req.Priority
 	if priority == "" {

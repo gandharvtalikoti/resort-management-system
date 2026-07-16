@@ -90,6 +90,12 @@ func (s *Store) GetBookings(resortID string) []models.AmenityBooking {
 	return bookings
 }
 
+func (s *Store) GetBookingsByRoom(resortID, roomID string) []models.AmenityBooking {
+	var bookings []models.AmenityBooking
+	database.DB.Where("resort_id = ? AND room_id = ?", resortID, roomID).Find(&bookings)
+	return bookings
+}
+
 func (s *Store) GetBookingsBySlot(resortID, amenityType, timeSlot string) int {
 	var count int64
 	database.DB.Model(&models.AmenityBooking{}).
@@ -119,4 +125,87 @@ func (s *Store) GetActiveRooms(resortID string) int {
 	}
 
 	return len(rooms)
+}
+
+// --- Consent Operations ---
+
+func (s *Store) AddConsent(consent models.GuestConsent) error {
+	return database.DB.Create(&consent).Error
+}
+
+func (s *Store) GetConsents(resortID string) []models.GuestConsent {
+	var consents []models.GuestConsent
+	database.DB.Where("resort_id = ?", resortID).Order("created_at DESC").Find(&consents)
+	return consents
+}
+
+func (s *Store) GetConsentsByRoom(resortID, roomID string) []models.GuestConsent {
+	var consents []models.GuestConsent
+	database.DB.Where("resort_id = ? AND room_id = ?", resortID, roomID).Order("created_at DESC").Find(&consents)
+	return consents
+}
+
+// --- Session Operations ---
+
+func (s *Store) AddSession(session models.RoomSession) error {
+	return database.DB.Create(&session).Error
+}
+
+func (s *Store) GetActiveSession(resortID, roomID string) (*models.RoomSession, error) {
+	var session models.RoomSession
+	err := database.DB.Where("resort_id = ? AND room_id = ? AND is_active = ?", resortID, roomID, true).First(&session).Error
+	if err != nil {
+		return nil, err
+	}
+	return &session, nil
+}
+
+func (s *Store) GetActiveSessions(resortID string) []models.RoomSession {
+	var sessions []models.RoomSession
+	database.DB.Where("resort_id = ? AND is_active = ?", resortID, true).Find(&sessions)
+	return sessions
+}
+
+func (s *Store) CheckoutSession(resortID, roomID string) error {
+	now := database.DB.NowFunc()
+	err := database.DB.Model(&models.RoomSession{}).
+		Where("resort_id = ? AND room_id = ? AND is_active = ?", resortID, roomID, true).
+		Updates(map[string]interface{}{
+			"is_active":      false,
+			"checked_out_at": now,
+		}).Error
+
+	if err != nil {
+		return err
+	}
+
+	// Cancel active orders for this room
+	database.DB.Model(&models.Order{}).
+		Where("resort_id = ? AND room_id = ? AND status NOT IN ('completed', 'cancelled')", resortID, roomID).
+		Update("status", "cancelled")
+
+	// Cancel active tickets for this room
+	database.DB.Model(&models.ServiceTicket{}).
+		Where("resort_id = ? AND room_id = ? AND status NOT IN ('completed', 'cancelled')", resortID, roomID).
+		Update("status", "cancelled")
+
+	return nil
+}
+
+func (s *Store) ValidateSessionToken(resortID, roomID, token string) bool {
+	var count int64
+	database.DB.Model(&models.RoomSession{}).
+		Where("resort_id = ? AND room_id = ? AND id = ? AND is_active = ?", resortID, roomID, token, true).
+		Count(&count)
+	return count > 0
+}
+
+func (s *Store) JoinSession(resortID, roomID, guestName string) (string, error) {
+	var session models.RoomSession
+	// Must match the active session and the guest name (case-insensitive for convenience)
+	err := database.DB.Where("resort_id = ? AND room_id = ? AND is_active = ? AND LOWER(guest_name) = LOWER(?)", resortID, roomID, true, guestName).First(&session).Error
+	if err != nil {
+		return "", fmt.Errorf("could not join session: invalid guest name or no active session")
+	}
+	return session.ID, nil
 }

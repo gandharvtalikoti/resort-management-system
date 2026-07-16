@@ -21,12 +21,23 @@ func NewBookingHandler(s *store.Store, h *ws.Hub) *BookingHandler {
 	return &BookingHandler{Store: s, Hub: h}
 }
 
-// MaxCapacity defines the maximum slots per amenity per time slot.
 var MaxCapacity = map[string]int{
-	"kayaking": 10,
-	"boating":  10,
-	"fishing":  10,
-	"bonfire":  20,
+	"kayaking":                 10,
+	"boating":                  10,
+	"fishing":                  10,
+	"bonfire":                  20,
+	"pool_table":               1,
+	"foosball":                 1,
+	"swimming_pool":            1,
+	"celebration_lake":         1,
+	"celebration_lounge":       1,
+	"celebration_amphitheater": 1,
+}
+
+var timeSlots = []string{
+	"09:00", "10:00", "11:00", "12:00", "13:00",
+	"14:00", "15:00", "16:00", "17:00", "18:00",
+	"19:00", "20:00",
 }
 
 // CreateBooking handles POST /api/v1/resorts/:id/bookings
@@ -46,63 +57,120 @@ func (h *BookingHandler) CreateBooking(c *fiber.Ctx) error {
 		})
 	}
 
+	authHeader := c.Get("Authorization")
+	if len(authHeader) < 8 || authHeader[:7] != "Bearer " {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Missing or invalid Authorization header",
+		})
+	}
+	token := authHeader[7:]
+
+	if !h.Store.ValidateSessionToken(resortID, req.RoomID, token) {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Invalid or expired session token",
+		})
+	}
+
 	// Check capacity
 	maxCap, ok := MaxCapacity[req.AmenityType]
 	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid amenity type. Use: kayaking, boating, fishing, or bonfire",
+			"error": "Invalid amenity type.",
 		})
 	}
 
-	currentCount := h.Store.GetBookingsBySlot(resortID, req.AmenityType, req.TimeSlot)
-	if currentCount >= maxCap {
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-			"error":     "No slots available for this time",
-			"capacity":  maxCap,
-			"booked":    currentCount,
-			"remaining": 0,
+	// Handle Duration
+	duration := req.Duration
+	if duration <= 0 {
+		duration = 1
+	}
+
+	// Find starting index in timeSlots
+	startIndex := -1
+	for i, slot := range timeSlots {
+		if slot == req.TimeSlot {
+			startIndex = i
+			break
+		}
+	}
+
+	if startIndex == -1 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid time slot",
 		})
 	}
 
-	booking := models.AmenityBooking{
-		ID:          uuid.New().String(),
-		ResortID:    resortID,
-		RoomID:      req.RoomID,
-		GuestName:   req.GuestName,
-		AmenityType: req.AmenityType,
-		TimeSlot:    req.TimeSlot,
-		CreatedAt:   time.Now(),
-	}
-
-	if err := h.Store.AddBooking(booking); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to create booking: " + err.Error(),
+	if startIndex+duration > len(timeSlots) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Duration exceeds available operating hours",
 		})
 	}
 
-	// Broadcast via WebSocket
-	payload, _ := json.Marshal(booking)
-	event := models.WSEvent{
-		Type:      "new_booking",
-		Payload:   payload,
-		ResortID:  resortID,
-		Timestamp: time.Now(),
+	requestedSlots := timeSlots[startIndex : startIndex+duration]
+
+	// Pre-check capacity for ALL requested slots
+	for _, slot := range requestedSlots {
+		currentCount := h.Store.GetBookingsBySlot(resortID, req.AmenityType, slot)
+		if currentCount >= maxCap {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+				"error":     "So sorry, this amenity is already booked by another guest during this time. Please contact the manager for further assistance.",
+				"capacity":  maxCap,
+				"booked":    currentCount,
+				"remaining": maxCap - currentCount,
+			})
+		}
 	}
-	eventJSON, _ := json.Marshal(event)
-	h.Hub.Broadcast(resortID, eventJSON)
+
+	// If all are free, create the bookings
+	var bookings []models.AmenityBooking
+	for _, slot := range requestedSlots {
+		booking := models.AmenityBooking{
+			ID:          uuid.New().String(),
+			ResortID:    resortID,
+			RoomID:      req.RoomID,
+			GuestName:   req.GuestName,
+			AmenityType: req.AmenityType,
+			TimeSlot:    slot,
+			CreatedAt:   time.Now(),
+		}
+
+		if err := h.Store.AddBooking(booking); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Failed to create booking: " + err.Error(),
+			})
+		}
+		bookings = append(bookings, booking)
+
+		// Broadcast via WebSocket
+		payload, _ := json.Marshal(booking)
+		event := models.WSEvent{
+			Type:      "new_booking",
+			Payload:   payload,
+			ResortID:  resortID,
+			Timestamp: time.Now(),
+		}
+		eventJSON, _ := json.Marshal(event)
+		h.Hub.Broadcast(resortID, eventJSON)
+	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"booking":   booking,
-		"capacity":  maxCap,
-		"booked":    currentCount + 1,
-		"remaining": maxCap - currentCount - 1,
+		"bookings": bookings,
+		"capacity": maxCap,
 	})
 }
 
 // GetBookings handles GET /api/v1/resorts/:id/bookings
 func (h *BookingHandler) GetBookings(c *fiber.Ctx) error {
 	resortID := c.Params("id")
-	bookings := h.Store.GetBookings(resortID)
+	roomID := c.Query("room_id")
+
+	var bookings []models.AmenityBooking
+	if roomID != "" {
+		bookings = h.Store.GetBookingsByRoom(resortID, roomID)
+	} else {
+		bookings = h.Store.GetBookings(resortID)
+	}
+
 	return c.JSON(bookings)
 }
 
@@ -116,10 +184,6 @@ func (h *BookingHandler) GetCapacity(c *fiber.Ctx) error {
 		Capacity    int    `json:"capacity"`
 		Booked      int    `json:"booked"`
 		Remaining   int    `json:"remaining"`
-	}
-
-	timeSlots := []string{
-		"09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00",
 	}
 
 	var result []SlotCapacity

@@ -111,6 +111,7 @@ type CreateBookingRequest struct {
 	GuestName   string `json:"guest_name"`
 	AmenityType string `json:"amenity_type"`
 	TimeSlot    string `json:"time_slot"`
+	Duration    int    `json:"duration"`
 }
 
 // --- Analytics Models ---
@@ -127,4 +128,47 @@ type MenuItemStat struct {
 	Name   string `json:"name"`
 	Count  int    `json:"count"`
 	Revenue float64 `json:"revenue"`
+}
+
+// --- Guest Consent & Session Models ---
+
+type GuestConsent struct {
+	ID                     string    `json:"id" gorm:"primaryKey"`
+	ResortID               string    `json:"resort_id" gorm:"index"`
+	RoomID                 string    `json:"room_id" gorm:"index"`
+	GuestName              string    `json:"guest_name"`
+	MobileNumber           string    `json:"mobile_number"`
+	EmergencyContactName   string    `json:"emergency_contact_name"`
+	EmergencyContactNumber string    `json:"emergency_contact_number"`
+	AadhaarNumber          string    `json:"aadhaar_number"`
+	AadhaarImage           string    `json:"aadhaar_image,omitempty" gorm:"type:text"`  // base64 PNG/PDF
+	SignatureData          string    `json:"signature_data" gorm:"type:text"`            // base64 PNG
+	IPAddress              string    `json:"ip_address"`
+	UserAgent              string    `json:"user_agent"`
+	TCVersion              string    `json:"tc_version"`
+	AgreedAt               time.Time `json:"agreed_at"`
+	CreatedAt              time.Time `json:"created_at"`
+}
+
+type RoomSession struct {
+	ID           string     `json:"id" gorm:"primaryKey"` // Also the session token
+	ResortID     string     `json:"resort_id" gorm:"index"`
+	RoomID       string     `json:"room_id" gorm:"index"`
+	GuestName    string     `json:"guest_name"`
+	ConsentID    string     `json:"consent_id"`
+	IsActive     bool       `json:"is_active" gorm:"default:true;index"`
+	CheckedInAt  time.Time  `json:"checked_in_at"`
+	CheckedOutAt *time.Time `json:"checked_out_at,omitempty"`
+}
+
+type CreateConsentRequest struct {
+	RoomID                 string `json:"room_id"`
+	GuestName              string `json:"guest_name"`
+	MobileNumber           string `json:"mobile_number"`
+	EmergencyContactName   string `json:"emergency_contact_name"`
+	EmergencyContactNumber string `json:"emergency_contact_number"`
+	AadhaarNumber          string `json:"aadhaar_number"`
+	AadhaarImage           string `json:"aadhaar_image,omitempty"`
+	SignatureData          string `json:"signature_data"`
+	TCVersion              string `json:"tc_version"`
 }

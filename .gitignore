@@ -5,3 +5,6 @@ node_modules/
 dist/
 build/
 backend/buddha-village
+.terraform/
+*.tfstate
+*.tfstate.*
