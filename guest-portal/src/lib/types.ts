@@ -4,8 +4,8 @@ export interface MenuItem {
   price: number;
   category: string;
   description: string;
-  is_veg: boolean;
-  is_available: boolean;
+  is_veg?: boolean;
+  is_available?: boolean;
   emoji?: string;
 }
 
@@ -20,7 +20,7 @@ export interface Order {
   resort_id: string;
   room_id: string;
   items: OrderItem[];
-  status: 'new' | 'assigned' | 'in_progress' | 'completed';
+  status: 'new' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
   total: number;
   created_at: string;
 }
@@ -37,8 +37,8 @@ export interface ServiceTicket {
   id: string;
   resort_id: string;
   room_id: string;
-  type: 'towels' | 'water' | 'cleaning' | 'buggy' | 'emergency';
-  status: 'new' | 'assigned' | 'in_progress' | 'completed';
+  type: 'towels' | 'water' | 'cleaning' | 'buggy' | 'emergency' | 'bill_request' | 'ebill_request';
+  status: 'new' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
   priority: 'normal' | 'high' | 'urgent';
   assignee?: string;
   notes?: string;
