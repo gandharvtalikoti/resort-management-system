@@ -1,0 +1,203 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Core Palette ── */
+  --color-gold: #FFCB2B;
+  --color-gold-dark: #DFA918;
+  
+  /* ── Semantic Colors (Dark Theme) ── */
+  --color-background: #030303;
+  --color-background-alt: #0A0A0A;
+  --color-surface: #1C1C1C;
+  --color-surface-hover: #2A2A2A;
+  --color-foreground: #FFFFFF;
+  --color-foreground-muted: #A0A0A0;
+  --color-border: #333333;
+
+  /* ── Typography ── */
+  --font-sans: "Montserrat", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", "Cinzel", ui-serif, Georgia, serif;
+
+  /* ── Animations ── */
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-slide-in-right: slide-in-right 0.35s ease-out both;
+  --animate-pin-shake: pin-shake 0.5s ease-in-out;
+}
+
+/* ── Keyframes ── */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 203, 43, 0);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px rgba(255, 203, 43, 0.25);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pin-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 50%, 90% { transform: translateX(-6px); }
+  30%, 70% { transform: translateX(6px); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.4);
+  }
+}
+
+/* ── Glassmorphism Panel ── */
+.glass-panel {
+  background: rgba(28, 28, 28, 0.85); /* Charcoal Silk base */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Kanban Column ── */
+.kanban-column {
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Task Card ── */
+.task-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Pulse Dot (live indicator) ── */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+/* ── Pin Shake ── */
+.pin-shake {
+  animation: pin-shake 0.5s ease-in-out;
+}
+
+/* ── Smooth scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ── Global resets & Base Styles ── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-background);
+  font-family: var(--font-sans);
+  color: var(--color-foreground-muted);
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(255, 203, 43, 0.25);
+  color: var(--color-foreground);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--color-foreground);
+  letter-spacing: 0.03em;
+}
+
+/* ── Buttons ── */
+.btn-primary {
+  background-color: var(--color-gold);
+  color: var(--color-background);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: background-color 0.3s ease;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-gold-dark);
+}
+
+.btn-secondary, .btn-ghost {
+  background-color: transparent;
+  color: var(--color-gold);
+  border: 1px solid var(--color-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.3s ease;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+}
+
+.btn-secondary:hover, .btn-ghost:hover {
+  background-color: rgba(255, 203, 43, 0.1);
+}

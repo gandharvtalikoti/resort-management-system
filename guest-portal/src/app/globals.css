@@ -1,0 +1,249 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens ──────────────────────────────────────────────────── */
+@theme {
+  /* ── Core Palette ── */
+  --color-gold: #FFCB2B;
+  --color-gold-dark: #DFA918;
+  
+  /* ── Semantic Colors (Dark Theme) ── */
+  --color-background: #030303;
+  --color-background-alt: #0A0A0A;
+  --color-surface: #1C1C1C;
+  --color-surface-hover: #2A2A2A;
+  --color-foreground: #FFFFFF;
+  --color-foreground-muted: #A0A0A0;
+  --color-border: #333333;
+
+  --font-sans: "Montserrat", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", "Cinzel", ui-serif, Georgia, serif;
+}
+
+/* ─── Keyframe Animations ────────────────────────────────────────────── */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(255, 203, 43, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 203, 43, 0.6);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes count-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes check-draw {
+  0% {
+    stroke-dashoffset: 48;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ─── Glassmorphism ──────────────────────────────────────────────────── */
+.glass-panel {
+  background: rgba(28, 28, 28, 0.85); /* Charcoal Silk base */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.glass-panel-heavy {
+  background: rgba(28, 28, 28, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 203, 43, 0.2); /* Vivid Saffron accent */
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Skeleton Loader ────────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #0f0f0f 25%,
+    #1c1c1c 50%,
+    #0f0f0f 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* ─── Toast Notifications ────────────────────────────────────────────── */
+.toast-enter {
+  animation: slide-down 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast-exit {
+  animation: slide-up 0.25s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
+  animation-direction: reverse;
+  opacity: 0;
+}
+
+/* ─── Base Styles ────────────────────────────────────────────────────── */
+body {
+  background-color: var(--color-background);
+  font-family: var(--font-sans);
+  color: var(--color-foreground-muted);
+  line-height: 1.8; /* Generous line height */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 300; /* Low weights */
+  color: var(--color-foreground);
+  letter-spacing: 0.03em;
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────── */
+.btn-primary {
+  background-color: var(--color-gold);
+  color: var(--color-background);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: background-color 0.3s ease;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600; /* Bold blocky text */
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-gold-dark);
+}
+
+.btn-secondary, .btn-ghost {
+  background-color: transparent;
+  color: var(--color-gold);
+  border: 1px solid var(--color-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.3s ease;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+}
+
+.btn-secondary:hover, .btn-ghost:hover {
+  background-color: rgba(255, 203, 43, 0.1);
+}
+
+/* ─── Utility Animations ─────────────────────────────────────────────── */
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-count-up {
+  animation: count-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-check-draw {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: check-draw 0.5s 0.2s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-sage-dark);
+  border-radius: 99px;
+}
+
+/* ─── Focus Ring ─────────────────────────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Hide scrollbar for pill containers */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
