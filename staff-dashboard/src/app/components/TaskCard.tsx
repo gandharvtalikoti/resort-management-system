@@ -70,6 +70,16 @@ function statusBadge(status: TaskStatus): { label: string; classes: string } {
         label: 'Completed',
         classes: 'bg-emerald-50 text-emerald-600',
       };
+    case 'cancelled':
+      return {
+        label: 'Cancelled',
+        classes: 'bg-red-50 text-red-600',
+      };
+    default:
+      return {
+        label: 'Unknown',
+        classes: 'bg-gray-50 text-gray-500',
+      };
   }
 }
 

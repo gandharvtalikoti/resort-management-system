@@ -4,7 +4,7 @@ export interface Order {
   room_id: string;
   guest_name?: string;
   items: OrderItem[];
-  status: 'new' | 'assigned' | 'in_progress' | 'completed';
+  status: 'new' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
   total: number;
   created_at: string;
 }
@@ -22,8 +22,8 @@ export interface ServiceTicket {
   resort_id: string;
   room_id: string;
   guest_name?: string;
-  type: 'towels' | 'water' | 'cleaning' | 'buggy' | 'emergency';
-  status: 'new' | 'assigned' | 'in_progress' | 'completed';
+  type: 'towels' | 'water' | 'cleaning' | 'buggy' | 'emergency' | 'bill_request' | 'ebill_request';
+  status: 'new' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
   priority: 'normal' | 'high' | 'urgent';
   assignee?: string;
   notes?: string;
@@ -38,7 +38,7 @@ export interface WebSocketEvent {
 }
 
 export type StaffRole = 'all' | 'reception' | 'kitchen' | 'housekeeping' | 'maintenance' | 'rooms' | 'amenities';
-export type TaskStatus = 'new' | 'assigned' | 'in_progress' | 'completed';
+export type TaskStatus = 'new' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
 
 export interface TaskItem {
   id: string;
