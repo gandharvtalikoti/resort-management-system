@@ -6,6 +6,7 @@ export interface MenuItem {
   description: string;
   is_veg: boolean;
   is_available: boolean;
+  emoji?: string;
 }
 
 export interface CartItem {
