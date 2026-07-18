@@ -117,6 +117,7 @@ data "aws_ami" "amazon_linux_2023" {
 resource "aws_instance" "backend" {
   ami           = data.aws_ami.amazon_linux_2023.id
   instance_type = "t3.micro"
+  key_name      = aws_key_pair.kp.key_name
   
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
   
@@ -148,7 +149,7 @@ resource "aws_instance" "backend" {
               ExecStart=/opt/resort-management-system/backend/server
               Restart=always
               Environment="PORT=80"
-              Environment="DATABASE_URL=host=${aws_db_instance.resort_db.address} user=${var.db_username} password=${var.db_password} dbname=postgres port=5432 sslmode=disable"
+              Environment="DATABASE_URL=host=${aws_db_instance.resort_db.address} user=${var.db_username} password=${var.db_password} dbname=postgres port=5432 sslmode=require"
               
               [Install]
               WantedBy=multi-user.target
