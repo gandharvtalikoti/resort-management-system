@@ -1,15 +1,14 @@
 module buddha-village/backend
 
-go 1.20
+go 1.25.0
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.14
 	github.com/gofiber/websocket/v2 v2.2.1
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
-	github.com/lib/pq v1.12.3
-	golang.org/x/crypto v0.54.0
-	gorm.io/driver/postgres v1.6.0
+	golang.org/x/crypto v0.17.0
+	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.31.2
 )
 
