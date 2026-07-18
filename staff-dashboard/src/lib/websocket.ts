@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { WebSocketEvent } from './types';
 
-const WS_URL = 'ws://localhost:8080/ws/buddha-village';
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080/ws/buddha-village';
 const MAX_RECONNECT_DELAY = 30000;
 const INITIAL_RECONNECT_DELAY = 1000;
 
