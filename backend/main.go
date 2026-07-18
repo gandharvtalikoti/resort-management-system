@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"buddha-village/backend/database"
 	"buddha-village/backend/handlers"
@@ -122,12 +123,17 @@ func main() {
 
 	// --- Start Server ---
 
-	log.Println("🏨 Buddha Village API starting on :8080")
-	log.Println("   REST API:  http://localhost:8080/api/v1/resorts/buddha-village/")
-	log.Println("   WebSocket: ws://localhost:8080/ws/buddha-village")
-	log.Println("   Health:    http://localhost:8080/health")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
-	if err := app.Listen(":8080"); err != nil {
+	log.Printf("🏨 Buddha Village API starting on :%s\n", port)
+	log.Printf("   REST API:  http://localhost:%s/api/v1/resorts/buddha-village/\n", port)
+	log.Printf("   WebSocket: ws://localhost:%s/ws/buddha-village\n", port)
+	log.Printf("   Health:    http://localhost:%s/health\n", port)
+
+	if err := app.Listen(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
